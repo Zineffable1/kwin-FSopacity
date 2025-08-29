@@ -1,0 +1,14 @@
+{
+  "KPlugin": {
+    "Id": "FullOpacityFS",
+    "Name": "Full Opacity Fullscreen",
+    "Description": "Makes the opacity of fullscreen windows complete, and returns them to their previous upon exiting fullscreen.",
+    "Version": "1.0",
+    "License": "GPLv3",
+    "EnabledByDefault": false
+  },
+  "ServiceTypes": ["KWin/Script"],
+  "X-Plasma-API": "javascript",
+  "X-Plasma-MainScript": "code/main.js",
+  "KPackageStructure": "KWin/Script"
+}
