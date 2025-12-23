@@ -3,7 +3,7 @@
     "Id": "FullOpacityFS",
     "Name": "Full Opacity Fullscreen",
     "Description": "Makes the opacity of fullscreen windows complete, and returns them to their previous upon exiting fullscreen.",
-    "Version": "1.2",
+    "Version": "1.3",
     "License": "MIT",
     "EnabledByDefault": false
   },
