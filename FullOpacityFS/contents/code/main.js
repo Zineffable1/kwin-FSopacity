@@ -3,7 +3,9 @@ const ignorePlasmashell = readConfig("ignorePlasmashell", true);
 
 const savedOpacities = new Map();
 const hooked = new Set();
+const preMaxOpacities = new Map(); // Store opacities before forcing max
 let scriptEnabled = true;
+let forceMaxOpacity = false;
 
 function key(win) { return String(win.internalId); }
 function remember(win, val) { savedOpacities.set(key(win), val); }
@@ -20,8 +22,15 @@ function shouldIgnore(win) {
 }
 
 function adaptOpacity(win) {
-  if (!scriptEnabled) return; // Exit immediately if script is disabled
+  if (!scriptEnabled) return;
   if (!win || !win.normalWindow || shouldIgnore(win)) return;
+
+  if (forceMaxOpacity) {
+    if (win.opacity !== 1) {
+      win.opacity = 1;
+    }
+    return;
+  }
 
   if (win.fullScreen) {
     const cur = win.opacity;
@@ -52,7 +61,6 @@ function toggleScript() {
   scriptEnabled = !scriptEnabled;
 
   if (!scriptEnabled) {
-    // Script disabled - restore all saved opacities
     const allWindows = workspace.windowList();
     for (let i = 0; i < allWindows.length; i++) {
       const win = allWindows[i];
@@ -65,7 +73,6 @@ function toggleScript() {
       }
     }
   } else {
-    // Script re-enabled - reprocess all fullscreen windows
     const allWindows = workspace.windowList();
     for (let i = 0; i < allWindows.length; i++) {
       const win = allWindows[i];
@@ -76,12 +83,42 @@ function toggleScript() {
   }
 }
 
-// Register the shortcut
+function toggleMaxOpacity() {
+  forceMaxOpacity = !forceMaxOpacity;
+
+  const allWindows = workspace.windowList();
+  for (let i = 0; i < allWindows.length; i++) {
+    const win = allWindows[i];
+    if (win && win.normalWindow && !shouldIgnore(win)) {
+      if (forceMaxOpacity) {
+        // Save current opacity before forcing max
+        preMaxOpacities.set(key(win), win.opacity);
+        win.opacity = 1;
+      } else {
+        // Restore the opacity from before max was enabled
+        const preMax = preMaxOpacities.get(key(win));
+        if (preMax !== undefined) {
+          win.opacity = preMax;
+          preMaxOpacities.delete(key(win));
+        }
+      }
+    }
+  }
+}
+
+// Register shortcuts
 registerShortcut(
   "FullOpacityFSToggle",
   "FullOpacityFS: Toggle entire script on/off",
   "",
   toggleScript
+);
+
+registerShortcut(
+  "FullOpacityFSMaxOpacity",
+  "FullOpacityFS: Toggle max opacity for all windows",
+  "",
+  toggleMaxOpacity
 );
 
 // Bootstrap
